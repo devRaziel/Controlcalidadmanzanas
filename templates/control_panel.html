@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Calidad de manzanas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #E0F7FA; /* Cambiar el color de fondo a celeste bajito */
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            width: 100%;
+            background-color: #1A5276; /* Color azul */
+            color: white;
+            padding: 20px 0;
+            margin: 0;
+            text-align: center;
+        }
+
+        button {
+            background-color: #1A5276; /* Color azul */
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            margin: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #145A86; /* Azul más oscuro */
+        }
+
+        button:active {
+            background-color: #104E73; /* Azul aún más oscuro */
+        }
+
+        #content {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            padding: 20px;
+        }
+
+        #video-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-grow: 1; /* Ajuste para ocupar el espacio restante */
+        }
+
+        #video-buttons {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        #video {
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #databaseInfo {
+            margin-left: 20px; /* Añadido para separación visual */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #E0F7FA; /* Color celeste bajito */
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #1A5276; /* Color azul */
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            padding-top: 60px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .apple-image {
+            margin-bottom: 20px;
+            border: 2px dashed #1313c4; /* Borde azul */
+            border-radius: 15px;
+            padding: 10px;
+            background-color: #fff;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .print-button {
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Control de Calidad de manzanas</h1>
+    <div id="content">
+        <div id="video-container">
+            <div id="video-buttons">
+                <button onclick="startProgram()">Iniciar Ruta</button>
+                <button onclick="stopProgram()">Detener Programa</button>
+            </div>
+            <img id="video" src="{{ url_for('video_feed') }}" width="720" height="480">
+        </div>
+        <div id="databaseInfo">
+            <img src="../static/man2.png"/>
+            <div class="print-button">
+                <button id="printInfoBtn">Imprimir Información</button>
+            </div>
+            <table id="databaseTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Totales</th>
+                        <th>Red Delicius</th>
+                        <th>Granny Smith</th>
+                        <th>Golden Delicius</th>
+                        <th>Fuji</th>
+                        <th>Buena Calidad</th>
+                        <th>Media Calidad</th>
+                        <th>Mala Calidad</th>
+                        <th>Fecha y Hora</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Aquí se mostrarán las filas de la tabla -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <img id="modalImage" src="" alt="Imagen">
+        </div>
+    </div>
+
+    <script>
+        function startProgram() {
+            fetch('/start_program', { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Programa iniciado');
+                        document.getElementById('video').src = "{{ url_for('video_feed') }}";
+                    } else {
+                        console.error('Error al iniciar el programa');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function stopProgram() { // Función para detener el programa
+            fetch('/stop_program', { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Programa detenido');
+                    } else {
+                        console.error('Error al detener el programa');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        document.getElementById('printInfoBtn').addEventListener('click', async function() {
+            try {
+                const response = await fetch('http://192.168.1.8:5050/get_info', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                const databaseTableBody = document.getElementById('databaseTable').getElementsByTagName('tbody')[0];
+                databaseTableBody.innerHTML = '';
+
+                result.forEach(rowData => {
+                    const row = document.createElement('tr');
+                    Object.values(rowData).forEach(cellData => {
+                        const cell = document.createElement('td');
+                        cell.textContent = cellData;
+                        row.appendChild(cell);
+                    });
+
+                    // Crear y agregar un botón para eliminar el registro de la fila
+                    const deleteButtonCell = document.createElement('td');
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Eliminar';
+                    deleteButton.addEventListener('click', async () => {
+                        try {
+                            const confirmDelete = confirm("¿Estás seguro de que deseas eliminar este registro?");
+                            if (confirmDelete) {
+                                const id = rowData.ID; // Suponiendo que el ID está en la primera columna
+                                const response = await fetch('http://127.0.0.1:5050/delete_record', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({ id: id })
+                                });
+
+                                const deleteResult = await response.json();
+                                if (deleteResult.success) {
+                                    alert("Registro eliminado exitosamente.");
+                                    document.getElementById('printInfoBtn').click();
+                                } else {
+                                    alert("Error al eliminar el registro.");
+                                }
+                            }
+                        } catch (error) {
+                            console.error("Error al eliminar el registro:", error);
+                        }
+                    });
+                    deleteButtonCell.appendChild(deleteButton);
+                    row.appendChild(deleteButtonCell);
+
+                    databaseTableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Error en la solicitud fetch:", error);
+            }
+        });
+
+        const closeModalButton = document.getElementsByClassName('close')[0];
+        closeModalButton.onclick = function() {
+            const modal = document.getElementById('imageModal');
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('imageModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

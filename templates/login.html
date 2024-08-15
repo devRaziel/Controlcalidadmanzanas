@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplicación de Inicio de Sesión</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-image: url('../static/back.jpg'); /* Aquí especificas la ruta de la imagen de fondo */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        .container {
+            width: 400px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            background-color: rgba(249, 249, 249, 0.8); /* Fondo semitransparente para el contenedor */
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .title-container {
+            margin-bottom: 20px;
+        }
+        .login-container {
+            margin-top: 20px;
+        }
+        .container h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .container label {
+            display: block;
+            margin-top: 10px;
+            color: #555;
+        }
+        .container input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .container button {
+            width: calc(50% - 10px);
+            padding: 10px;
+            margin-top: 20px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            background-color: #007bff;
+            cursor: pointer;
+        }
+        .container button:last-child {
+            margin-right: 0;
+            background-color: #28a745;
+        }
+        .container button:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title-container">
+            <h1>Sistema de Control de Calidad de Manzanas</h1>
+        </div>
+        <div class="login-container">
+            <h1>Inicio de Sesión</h1>
+            <label for="username">Nombre de usuario</label>
+            <input type="text" id="username" name="username" required>
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" name="password" required>
+            <div>
+                <button onclick="login()">Iniciar Sesión</button>
+                <button onclick="signUp()">Registrarse</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                alert(result.message);
+                window.location.href = '/video2'; // Redirigir a la página de control
+            } else {
+                const result = await response.json();
+                alert(result.message);
+            }
+        }
+        async function signUp() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const response = await fetch('/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            const result = await response.json();
+            alert(result.message);
+        }
+    </script>
+</body>
+</html>
+
